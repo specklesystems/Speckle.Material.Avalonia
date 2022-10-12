@@ -31,10 +31,6 @@ namespace Material.Demo
                     UseDBusMenu = true,
                     EnableIme = true
                 })
-                .With(new Win32PlatformOptions
-                {
-                    EnableMultitouch = true
-                })
                 .UseXamlDisplay()
                 .LogToTrace();
         }

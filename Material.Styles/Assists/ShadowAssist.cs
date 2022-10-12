@@ -62,11 +62,11 @@ namespace Material.Styles.Assists
 
     public static class ShadowAssist
     {
-        public static readonly AvaloniaProperty<ShadowDepth> ShadowDepthProperty =
+        public static readonly AttachedProperty<ShadowDepth> ShadowDepthProperty =
             AvaloniaProperty.RegisterAttached<AvaloniaObject, ShadowDepth>(
                 "ShadowDepth", typeof(ShadowAssist));
 
-        public static readonly AvaloniaProperty<bool> DarkenProperty =
+        public static readonly AttachedProperty<bool> DarkenProperty =
             AvaloniaProperty.RegisterAttached<AvaloniaObject, bool>(
                 "Darken", typeof(ShadowAssist));
 
