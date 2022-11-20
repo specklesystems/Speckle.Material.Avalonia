@@ -12,7 +12,7 @@ using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
 /// <summary>
 /// Representing targets for github pipeline for main repository
 /// </summary>
-[GitHubActions("main", GitHubActionsImage.UbuntuLatest, AutoGenerate = true,
+[GitHubActions("main", GitHubActionsImage.UbuntuLatest, AutoGenerate = true, Submodules = GitHubActionsSubmodules.Recursive,
     InvokedTargets = new[] { nameof(Compile), nameof(PublishNugetPackage) },
     ImportSecrets = new[] { nameof(NuGetKey) }, EnableGitHubToken = true,
     On = new[] {
