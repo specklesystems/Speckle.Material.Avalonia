@@ -5,14 +5,24 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Nuke.Common;
 using Nuke.Common.CI.AzurePipelines;
+using Nuke.Common.CI.GitHubActions;
 using Nuke.Common.IO;
+using Nuke.Common.ProjectModel;
+using Nuke.Common.Tooling;
+using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Utilities.Collections;
 using Serilog;
 partial class Build {
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
-    BuildParameters Parameters { get; set; }
+    [Parameter("version")]
+    public string Version { get; set; }
+
+    protected BuildParameters Parameters { get; set; }
+
+    [Solution(GenerateProjects = true)]
+    readonly Solution Solution;
 
     protected override void OnBuildInitialized() {
         Parameters = new BuildParameters(this);
@@ -29,10 +39,10 @@ partial class Build {
         Log.Information("IsLocalBuild: " + Parameters.IsLocalBuild);
         Log.Information("IsRunningOnUnix: " + Parameters.IsRunningOnUnix);
         Log.Information("IsRunningOnWindows: " + Parameters.IsRunningOnWindows);
-        Log.Information("IsRunningOnAzure:" + Parameters.IsRunningOnAzure);
+        Log.Information("IsRunningOnAzure: " + Parameters.IsRunningOnGithubActions);
         Log.Information("IsPullRequest: " + Parameters.IsPullRequest);
         Log.Information("IsMainRepo: " + Parameters.IsMainRepo);
-        Log.Information("IsMasterBranch: " + Parameters.IsMasterBranch);
+        Log.Information("IsMasterBranch: " + Parameters.IsNightlyRelease);
         Log.Information("IsReleaseBranch: " + Parameters.IsReleaseBranch);
         Log.Information("IsReleasable: " + Parameters.IsReleasable);
         Log.Information("IsNuGetRelease: " + Parameters.IsNuGetRelease);
@@ -48,22 +58,35 @@ partial class Build {
         Log.Information("Available RAM: " + GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 0x100000 + "MB");
     }
 
+    DotNetConfigHelper ApplySettingCore(DotNetConfigHelper c) {
+        c.AddProperty("PackageVersion", Parameters.Version)
+            .SetConfiguration(Parameters.Configuration)
+            .SetVerbosity(DotNetVerbosity.Minimal);
+        return c;
+    }
+    DotNetBuildSettings ApplySetting(DotNetBuildSettings c, Configure<DotNetBuildSettings> configurator = null) =>
+        ApplySettingCore(c).Build.Apply(configurator);
+
+    DotNetPackSettings ApplySetting(DotNetPackSettings c, Configure<DotNetPackSettings> configurator = null) =>
+        ApplySettingCore(c).Pack.Apply(configurator);
+
     public class BuildParameters {
         public string Configuration { get; }
         public string MainRepo { get; }
-        public string MasterBranch { get; }
+        public string NightlyAvailableBranch { get; }
         public string RepositoryName { get; }
         public string RepositoryBranch { get; }
         public string ReleaseConfiguration { get; }
         public string ReleaseBranchPrefix { get; }
         public string MSBuildSolution { get; }
+        public string CommitMessage { get; }
         public bool IsLocalBuild { get; }
         public bool IsRunningOnUnix { get; }
         public bool IsRunningOnWindows { get; }
-        public bool IsRunningOnAzure { get; }
+        public bool IsRunningOnGithubActions { get; }
         public bool IsPullRequest { get; }
         public bool IsMainRepo { get; }
-        public bool IsMasterBranch { get; }
+        public bool IsNightlyRelease { get; }
         public bool IsReleaseBranch { get; }
         public bool IsReleasable { get; }
         public bool IsNuGetRelease { get; }
@@ -85,7 +108,7 @@ partial class Build {
 
             // CONFIGURATION
             MainRepo = "https://github.com/AvaloniaCommunity/Material.Avalonia";
-            MasterBranch = "refs/heads/master";
+            NightlyAvailableBranch = "refs/heads/dev";
             ReleaseBranchPrefix = "refs/heads/release/";
             ReleaseConfiguration = "Release";
             MSBuildSolution = RootDirectory / "Material.Avalonia.sln";
@@ -95,33 +118,29 @@ partial class Build {
             IsRunningOnUnix = Environment.OSVersion.Platform == PlatformID.Unix ||
                               Environment.OSVersion.Platform == PlatformID.MacOSX;
             IsRunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            IsRunningOnAzure = Host is AzurePipelines ||
-                               Environment.GetEnvironmentVariable("LOGNAME") == "vsts";
+            IsRunningOnGithubActions = Host is GitHubActions;
 
-            if (IsRunningOnAzure) {
-                RepositoryName = AzurePipelines.Instance.RepositoryUri;
-                RepositoryBranch = AzurePipelines.Instance.SourceBranch;
-                IsPullRequest = AzurePipelines.Instance.PullRequestId.HasValue;
-                IsMainRepo = StringComparer.OrdinalIgnoreCase.Equals(MainRepo, AzurePipelines.Instance.RepositoryUri);
+            if (IsRunningOnGithubActions) {
+                RepositoryName = GitHubActions.Instance.ServerUrl + GitHubActions.Instance.Repository;
+                RepositoryBranch = GitHubActions.Instance.Ref;
+                IsPullRequest = GitHubActions.Instance.Ref.StartsWith("refs/pull", StringComparison.OrdinalIgnoreCase);
+                CommitMessage = GitHubActions.Instance.GitHubEvent["head_commit"]!.Value<string>("message");
             }
-            IsMainRepo =
-                StringComparer.OrdinalIgnoreCase.Equals(MainRepo,
-                    RepositoryName);
-            IsMasterBranch = StringComparer.OrdinalIgnoreCase.Equals(MasterBranch,
-                RepositoryBranch);
-            IsReleaseBranch = RepositoryBranch?.StartsWith(ReleaseBranchPrefix, StringComparison.OrdinalIgnoreCase) ==
-                              true;
-
+            IsMainRepo = StringComparer.OrdinalIgnoreCase.Equals(MainRepo, RepositoryName);
+            IsNightlyRelease = IsMainRepo
+                            && RepositoryBranch?.StartsWith(NightlyAvailableBranch, StringComparison.OrdinalIgnoreCase) == true
+                            && !CommitMessage.Contains("no nightly");
+            IsReleaseBranch = RepositoryBranch?.StartsWith(ReleaseBranchPrefix, StringComparison.OrdinalIgnoreCase) == true;
             IsReleasable = StringComparer.OrdinalIgnoreCase.Equals(ReleaseConfiguration, Configuration);
             IsNuGetRelease = IsMainRepo && IsReleasable && IsReleaseBranch;
 
             // VERSION
-            // Version = b.ForceNugetVersion ?? GetVersion();
+            Version = b.Version ?? b.Solution.Material_Avalonia.GetProperty(nameof(Version));
 
-            if (IsRunningOnAzure) {
-                if (!IsNuGetRelease) {
+            if (IsRunningOnGithubActions) {
+                if (IsNightlyRelease) {
                     // Use AssemblyVersion with Build as version
-                    Version += "-cibuild" + int.Parse(Environment.GetEnvironmentVariable("BUILD_BUILDID")).ToString("0000000") + "-beta";
+                    Version += "." + GitHubActions.Instance.RunNumber + "-nightly";
                 }
 
                 PublishTestResults = true;

@@ -47,6 +47,10 @@
           "type": "boolean",
           "description": "Disables displaying the NUKE logo"
         },
+        "NuGetKey": {
+          "type": "string",
+          "default": "Secrets must be entered via 'nuke :secrets [profile]'"
+        },
         "Partition": {
           "type": "string",
           "description": "Partition to use on CI"
@@ -75,10 +79,15 @@
               "Clean",
               "Compile",
               "CreateIntermediateNugetPackages",
-              "CreateNugetPackages",
+              "CreateNugetPackage",
+              "PublishNugetPackage",
               "ZipFiles"
             ]
           }
+        },
+        "Solution": {
+          "type": "string",
+          "description": "Path to a solution file that is automatically loaded"
         },
         "Target": {
           "type": "array",
@@ -89,7 +98,8 @@
               "Clean",
               "Compile",
               "CreateIntermediateNugetPackages",
-              "CreateNugetPackages",
+              "CreateNugetPackage",
+              "PublishNugetPackage",
               "ZipFiles"
             ]
           }
@@ -103,6 +113,10 @@
             "Quiet",
             "Verbose"
           ]
+        },
+        "Version": {
+          "type": "string",
+          "description": "version"
         }
       }
     }

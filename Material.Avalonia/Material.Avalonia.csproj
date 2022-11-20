@@ -13,7 +13,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageIcon>FavIcon.png</PackageIcon>
-        <VersionPrefix>3.0.0-avalonia10-preview2</VersionPrefix>
+        <Version>3.0.0-avalonia10-preview2</Version>
         <PackageReleaseNotes>
 Most likely latest version with Avalonia 0.10.x support
 Version 3.0.0-rc0 was replaced with 3.0.0-avalonia10-preview1 (in order to keep version names clear)
@@ -40,11 +40,6 @@ Version 3.0.0-rc0 was replaced with 3.0.0-avalonia10-preview1 (in order to keep 
         <None Include="../README.md" Pack="true" PackagePath="/" />
         <None Include="../wiki/FavIcon.png" Pack="true" PackagePath="/" />
     </ItemGroup>
-
-<!--    For nightly versions-->
-    <PropertyGroup>
-        <Version Condition="'$(PatchNumber)' != ''">$(VersionPrefix).$(PatchNumber)</Version>
-    </PropertyGroup>
     
     <ItemGroup>
         <AvaloniaResource Include="**\*.xaml">
