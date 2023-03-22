@@ -14,6 +14,8 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageIcon>FavIcon.png</PackageIcon>
       <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+      <PackageId>Speckle.Material.Avalonia</PackageId>
+      <Version>3.0.2</Version>
     </PropertyGroup>
 
     <ItemGroup>
@@ -21,12 +23,6 @@
         <None Include="../wiki/FavIcon.png" Pack="true" PackagePath="/" />
     </ItemGroup>
 
-<!--    For nightly versions-->
-    <PropertyGroup>
-        <PackageId>Speckle.Material.Avalonia</PackageId>
-        <Version>3.0.1</Version>
-    </PropertyGroup>
-    
     <ItemGroup>
         <AvaloniaResource Include="**\*.xaml">
             <SubType>Designer</SubType>
@@ -35,9 +31,13 @@
 
     <ItemGroup>
       <PackageReference Include="Avalonia" Version="0.10.18" />
+      <PackageReference Include="Teronis.MSBuild.Packaging.ProjectBuildInPackage" Version="1.0.0">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Material.Styles\Material.Styles.csproj"  PrivateAssets="all"/>
+      <ProjectReference Include="..\Material.Styles\Material.Styles.csproj" PrivateAssets="all" />
     </ItemGroup>
 </Project>

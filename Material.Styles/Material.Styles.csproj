@@ -50,12 +50,16 @@
     </ItemGroup>
     
     <ItemGroup>
-      <ProjectReference Include="..\Material.Colors\Material.Colors.csproj" />
-      <ProjectReference Include="..\Material.Ripple\Material.Ripple.csproj" />
+      <ProjectReference Include="..\Material.Colors\Material.Colors.csproj" PrivateAssets="all" />
+      <ProjectReference Include="..\Material.Ripple\Material.Ripple.csproj" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="Avalonia" Version="0.10.18" />
+      <PackageReference Include="Teronis.MSBuild.Packaging.ProjectBuildInPackage" Version="1.0.0">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
     </ItemGroup>
 
 </Project>
