@@ -15,7 +15,7 @@
         <PackageIcon>FavIcon.png</PackageIcon>
       <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
       <PackageId>Speckle.Material.Avalonia</PackageId>
-      <Version>3.0.2</Version>
+      <Version>3.0.3</Version>
     </PropertyGroup>
 
     <ItemGroup>
@@ -38,6 +38,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Material.Dialog\Material.Dialog.csproj" PrivateAssets="all" />
       <ProjectReference Include="..\Material.Styles\Material.Styles.csproj" PrivateAssets="all" />
     </ItemGroup>
 </Project>
