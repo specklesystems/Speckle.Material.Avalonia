@@ -23,9 +23,8 @@
 
 <!--    For nightly versions-->
     <PropertyGroup>
-        <Version Condition="'$(PatchNumber)' != ''">$(VersionPrefix).$(PatchNumber)</Version>
         <PackageId>Speckle.Material.Avalonia</PackageId>
-        <Version>3.0.0</Version>
+        <Version>3.0.1</Version>
     </PropertyGroup>
     
     <ItemGroup>
@@ -39,6 +38,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Material.Styles\Material.Styles.csproj" />
+      <ProjectReference Include="..\Material.Styles\Material.Styles.csproj"  PrivateAssets="all"/>
     </ItemGroup>
 </Project>
